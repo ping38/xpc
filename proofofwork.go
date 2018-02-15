@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"time"
 )
 
 var (
 	maxNonce = math.MaxInt64
 )
 
-const targetBits = 24
+const targetBits = 20
 
 // ProofOfWork represents a proof-of-work
 type ProofOfWork struct {
@@ -51,12 +52,13 @@ func (pow *ProofOfWork) Run() (int, []byte) {
 	var hash [32]byte
 	nonce := 0
 
+	startTime := time.Now()
+
 	fmt.Printf("Mining the block containing \"%s\"\n", pow.block.Data)
 	for nonce < maxNonce {
 		data := pow.prepareData(nonce)
 
 		hash = sha256.Sum256(data)
-		fmt.Printf("\r%x", hash)
 		hashInt.SetBytes(hash[:])
 
 		if hashInt.Cmp(pow.target) == -1 {
@@ -65,6 +67,10 @@ func (pow *ProofOfWork) Run() (int, []byte) {
 			nonce++
 		}
 	}
+	fmt.Printf("Hash=%x", hash)
+	fmt.Printf("\nNonce=%d", nonce)
+	endTime := time.Now()
+	fmt.Printf("\nPOW duration %v", endTime.Sub(startTime))
 	fmt.Print("\n\n")
 
 	return nonce, hash[:]
